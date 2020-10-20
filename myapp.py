@@ -5,16 +5,13 @@
     License: UCSB BSD -- see LICENSE file in this repository
 '''
 
-import os, json
+import os, json, boto3
 from flask import Flask, request, jsonify, make_response
-from S3Helpers import upload_file
 
 #use this if linking to a reaact app on the same server
 #app = Flask(__name__, static_folder='./build', static_url_path='/')
 app = Flask(__name__)
 DEBUG=True
-UPLOAD_FOLDER = "uploads"
-BUCKET = "handyhelpimages"
 
 ### CORS section
 @app.after_request
@@ -44,14 +41,20 @@ Note that flask automatically redirects routes without a final slash (/) to one 
 '''
 
 ### uploads given image to the bucket
-@app.route("/upload", methods=['POST'])
+@app.route('/upload')
 def upload():
-    if request.method == "POST":
-        f = request.files['file']
-        f.save(os.path.join(UPLOAD_FOLDER, f.filename))
-        upload_file(f"uploads/{f.filename}", BUCKET)
 
-        return "<h1>Uploaded file to handyhelpimages bucket</h1>"
+    session = boto3.Session(
+        aws_access_key_id=os.environ['ACCESS_KEY'],
+        aws_secret_access_key=os.environ['SECRET_KEY'],
+        region_name='us-west-1',
+    )
+
+    s3 = session.resource('s3')
+
+    s3.Bucket('handyhelpimages').put_object(Key='test.png', Body=request.files['myfile'])
+
+    return '<h1>Uploaded file to handyhelpimages bucket</h1>'
 
 @app.route('/api/getmsg/', methods=['GET'])
 def respond():
@@ -105,9 +108,9 @@ def postit():
 @app.route('/')
 def index():
     ### Temporary testing for upload_file function, will route to React index.html later
-    return '''<form method=POST enctype=multipart/form-data action="/upload">
-    <input type=file name=file>
-    <input type=submit value=Upload>
+    return '''<form method=POST enctype=multipart/form-data action="upload">
+    <input type=file name=myfile>
+    <input type=submit>
     </form>''' 
 
     #use this instead if linking to a raact app on the same server
