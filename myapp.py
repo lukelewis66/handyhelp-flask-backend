@@ -7,11 +7,16 @@
 
 import os, json
 from flask import Flask, request, jsonify, make_response
+import firebase_admin
+from firebase_admin import credentials, firestore, initialize_app
+from Helpers import getDictFromList
+
 
 #use this if linking to a reaact app on the same server
 #app = Flask(__name__, static_folder='./build', static_url_path='/')
 app = Flask(__name__)
 DEBUG=True
+
 
 ### CORS section
 @app.after_request
@@ -39,6 +44,42 @@ def after_request_func(response):
 '''
 Note that flask automatically redirects routes without a final slash (/) to one with a final slash (e.g. /getmsg redirects to /getmsg/). Curl does not handle redirects but instead prints the updated url. The browser handles redirects (i.e. takes them). You should always code your routes with both a start/end slash.
 '''
+
+
+cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
+@app.route('/getclients', methods=['GET'])
+def getclients():
+    result = db.collection('clients').get()
+    records = getDictFromList(result)
+    return jsonify(records), 200
+
+@app.route('/getcontractors', methods=['GET'])
+def getcontractors():
+    result = db.collection('contractors').get()
+    records = getDictFromList(result)
+    return jsonify(records), 200
+
+@app.route('/getreviews', methods=['GET'])
+def getreviews():
+    result = db.collection('reviews').get()
+    records = getDictFromList(result)
+    return jsonify(records), 200
+
+@app.route('/getlistings', methods=['GET'])
+def getlistings():
+    result = db.collection('listings').get()
+    records = getDictFromList(result)
+    return jsonify(records), 200
+
+@app.route('/getcontracts', methods=['GET'])
+def getcontracts():
+    result = db.collection('contracts').get()
+    records = getDictFromList(result)
+    return jsonify(records), 200
+
 @app.route('/api/getmsg/', methods=['GET'])
 def respond():
     # Retrieve the msg from url parameter of GET request 
