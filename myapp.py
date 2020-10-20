@@ -72,6 +72,7 @@ def getreviews():
 def getlistings():
     result = db.collection('listings').get()
     records = getDictFromList(result)
+    #test for gitignore
     return jsonify(records), 200
 
 @app.route('/getcontracts', methods=['GET'])
