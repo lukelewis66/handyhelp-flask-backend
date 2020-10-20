@@ -4,4 +4,4 @@ venv
 __pycache__
 node_modules/
 
-handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json
+*.json
