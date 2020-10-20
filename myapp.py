@@ -6,7 +6,7 @@
 '''
 
 import os, json, boto3
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, redirect
 
 #use this if linking to a reaact app on the same server
 #app = Flask(__name__, static_folder='./build', static_url_path='/')
@@ -41,20 +41,21 @@ Note that flask automatically redirects routes without a final slash (/) to one 
 '''
 
 ### uploads given image to the bucket
-@app.route('/upload')
+@app.route("/upload", methods=['POST'])
 def upload():
+    uploaded_file = request.files['myfile']
+    if request.method == "POST":
+        session = boto3.Session(
+            aws_access_key_id=os.environ['ACCESS_KEY'],
+            aws_secret_access_key=os.environ['SECRET_KEY'],
+            region_name='us-west-1',
+        )
 
-    session = boto3.Session(
-        aws_access_key_id=os.environ['ACCESS_KEY'],
-        aws_secret_access_key=os.environ['SECRET_KEY'],
-        region_name='us-west-1',
-    )
+        s3 = session.resource('s3')
 
-    s3 = session.resource('s3')
+        s3.Bucket('handyhelpimages').put_object(Key=f'{uploaded_file.filename}', Body=uploaded_file)
 
-    s3.Bucket('handyhelpimages').put_object(Key='test.png', Body=request.files['myfile'])
-
-    return '<h1>Uploaded file to handyhelpimages bucket</h1>'
+        return redirect("/")
 
 @app.route('/api/getmsg/', methods=['GET'])
 def respond():
