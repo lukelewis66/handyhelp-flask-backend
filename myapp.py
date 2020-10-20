@@ -7,11 +7,14 @@
 
 import os, json
 from flask import Flask, request, jsonify, make_response
+from S3Helpers import upload_file
 
 #use this if linking to a reaact app on the same server
 #app = Flask(__name__, static_folder='./build', static_url_path='/')
 app = Flask(__name__)
 DEBUG=True
+UPLOAD_FOLDER = "uploads"
+BUCKET = "handyhelpimages"
 
 ### CORS section
 @app.after_request
@@ -39,6 +42,17 @@ def after_request_func(response):
 '''
 Note that flask automatically redirects routes without a final slash (/) to one with a final slash (e.g. /getmsg redirects to /getmsg/). Curl does not handle redirects but instead prints the updated url. The browser handles redirects (i.e. takes them). You should always code your routes with both a start/end slash.
 '''
+
+### uploads given image to the bucket
+@app.route("/upload", methods=['POST'])
+def upload():
+    if request.method == "POST":
+        f = request.files['file']
+        f.save(os.path.join(UPLOAD_FOLDER, f.filename))
+        upload_file(f"uploads/{f.filename}", BUCKET)
+
+        return "<h1>Uploaded file to handyhelpimages bucket</h1>"
+
 @app.route('/api/getmsg/', methods=['GET'])
 def respond():
     # Retrieve the msg from url parameter of GET request 
@@ -90,7 +104,11 @@ def postit():
 # Set the base route to be the react index.html
 @app.route('/')
 def index():
-    return "<h1>Welcome to our server !!</h1>",200
+    ### Temporary testing for upload_file function, will route to React index.html later
+    return '''<form method=POST enctype=multipart/form-data action="/upload">
+    <input type=file name=file>
+    <input type=submit value=Upload>
+    </form>''' 
 
     #use this instead if linking to a raact app on the same server
     #make sure and update the app = Flask(...) line above for the same
