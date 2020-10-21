@@ -9,7 +9,7 @@ import os, json
 from flask import Flask, request, jsonify, make_response
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
-from Helpers import getDictFromList
+from FirebaseHelpers import getDictFromList
 
 
 #use this if linking to a reaact app on the same server
@@ -36,6 +36,7 @@ def after_request_func(response):
     else:
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         if origin:
+            print("here!")
             response.headers.add('Access-Control-Allow-Origin', origin)
 
     return response
@@ -50,11 +51,25 @@ cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-@app.route('/getclients', methods=['GET'])
+@app.route('/getclients/', methods=['GET'])
 def getclients():
     result = db.collection('clients').get()
     records = getDictFromList(result)
     return jsonify(records), 200
+
+@app.route('/addclient', methods=['POST'])
+def addclient():
+    try:
+        data = json.loads(request.data)
+    except ValueError:
+        return jsonify({"MESSAGE": "JSON load error"}),405
+
+
+@app.route('/testgetclients', methods=['GET'])
+def testgetclients():
+    clients_ref = db.collection('clients')
+    all_clients = [doc.to_dict() for doc in clients_ref.stream()]
+    return jsonify(all_clients)
 
 @app.route('/getcontractors', methods=['GET'])
 def getcontractors():
