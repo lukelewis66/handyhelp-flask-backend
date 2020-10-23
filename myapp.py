@@ -79,7 +79,6 @@ def addclient():
     except ValueError:
         return jsonify({"MESSAGE": "JSON load error"}),405
 
-
 @app.route('/testgetclients', methods=['GET'])
 def testgetclients():
     clients_ref = db.collection('clients')
