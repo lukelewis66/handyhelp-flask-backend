@@ -71,7 +71,7 @@ def testgetclients():
     all_clients = [doc.to_dict() for doc in clients_ref.stream()]
     return jsonify(all_clients)
 
-@app.route('/getcontractors', methods=['GET'])
+@app.route('/getcontractors/', methods=['GET'])
 def getcontractors():
     result = db.collection('contractors').get()
     records = getDictFromList(result)
