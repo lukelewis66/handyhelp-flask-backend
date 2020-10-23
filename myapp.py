@@ -5,13 +5,23 @@
     License: UCSB BSD -- see LICENSE file in this repository
 '''
 
+<<<<<<< HEAD
 import os, json, boto3
 from flask import Flask, request, jsonify, make_response, redirect
+=======
+import os, json
+from flask import Flask, request, jsonify, make_response
+import firebase_admin
+from firebase_admin import credentials, firestore, initialize_app
+from FirebaseHelpers import getDictFromList
+
+>>>>>>> b9d8bdd05fbc54ea72bb2ad03617f257412becfd
 
 #use this if linking to a reaact app on the same server
 #app = Flask(__name__, static_folder='./build', static_url_path='/')
 app = Flask(__name__)
 DEBUG=True
+
 
 ### CORS section
 @app.after_request
@@ -31,6 +41,7 @@ def after_request_func(response):
     else:
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         if origin:
+            print("here!")
             response.headers.add('Access-Control-Allow-Origin', origin)
 
     return response
@@ -40,6 +51,7 @@ def after_request_func(response):
 Note that flask automatically redirects routes without a final slash (/) to one with a final slash (e.g. /getmsg redirects to /getmsg/). Curl does not handle redirects but instead prints the updated url. The browser handles redirects (i.e. takes them). You should always code your routes with both a start/end slash.
 '''
 
+<<<<<<< HEAD
 ### uploads given image to the bucket
 @app.route("/upload", methods=['POST'])
 def upload():
@@ -56,6 +68,57 @@ def upload():
         s3.Bucket('handyhelpimages').put_object(Key=f'{uploaded_file.filename}', Body=uploaded_file)
 
         return redirect("/")
+=======
+
+cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
+@app.route('/getclients/', methods=['GET'])
+def getclients():
+    result = db.collection('clients').get()
+    records = getDictFromList(result)
+    return jsonify(records), 200
+
+@app.route('/addclient', methods=['POST'])
+def addclient():
+    try:
+        data = json.loads(request.data)
+    except ValueError:
+        return jsonify({"MESSAGE": "JSON load error"}),405
+
+
+@app.route('/testgetclients', methods=['GET'])
+def testgetclients():
+    clients_ref = db.collection('clients')
+    all_clients = [doc.to_dict() for doc in clients_ref.stream()]
+    return jsonify(all_clients)
+
+@app.route('/getcontractors/', methods=['GET'])
+def getcontractors():
+    result = db.collection('contractors').get()
+    records = getDictFromList(result)
+    return jsonify(records), 200
+
+@app.route('/getreviews', methods=['GET'])
+def getreviews():
+    result = db.collection('reviews').get()
+    records = getDictFromList(result)
+    return jsonify(records), 200
+
+@app.route('/getlistings', methods=['GET'])
+def getlistings():
+    result = db.collection('listings').get()
+    records = getDictFromList(result)
+    #test for gitignore
+    return jsonify(records), 200
+
+@app.route('/getcontracts', methods=['GET'])
+def getcontracts():
+    result = db.collection('contracts').get()
+    records = getDictFromList(result)
+    return jsonify(records), 200
+>>>>>>> b9d8bdd05fbc54ea72bb2ad03617f257412becfd
 
 @app.route('/api/getmsg/', methods=['GET'])
 def respond():
