@@ -5,17 +5,22 @@
     License: UCSB BSD -- see LICENSE file in this repository
 '''
 
+<<<<<<< HEAD
 import os, json
 import datetime
 from flask import Flask, request, jsonify, make_response
+=======
+import os, json, boto3
+from flask import Flask, request, jsonify, make_response, redirect
+>>>>>>> main
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
 from FirebaseHelpers import getDictFromList
-
+from dotenv import load_dotenv
+load_dotenv(override=True)
 
 #use this if linking to a reaact app on the same server
-#app = Flask(__name__, static_folder='./build', static_url_path='/')
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./build', static_url_path='/')
 DEBUG=True
 
 
@@ -47,6 +52,22 @@ def after_request_func(response):
 Note that flask automatically redirects routes without a final slash (/) to one with a final slash (e.g. /getmsg redirects to /getmsg/). Curl does not handle redirects but instead prints the updated url. The browser handles redirects (i.e. takes them). You should always code your routes with both a start/end slash.
 '''
 
+### uploads given image to the bucket
+@app.route("/upload", methods=['POST', 'GET'])
+def upload():
+    uploaded_file = request.files.get('file')
+    if request.method == "POST":
+        session = boto3.Session(
+            aws_access_key_id=os.getenv('ACCESS_KEY'),
+            aws_secret_access_key=os.getenv('SECRET_KEY'),
+            region_name=os.getenv('REGION_NAME'),
+        )
+
+        s3 = session.resource('s3')
+
+        s3.Bucket('handyhelpimages').put_object(Key=f'{uploaded_file.filename}', Body=uploaded_file)
+
+        return ''
 
 cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
 firebase_admin.initialize_app(cred)
@@ -85,7 +106,6 @@ def addclient():
         return jsonify({"MESSAGE": "User added"}), 200
     except ValueError:
         return jsonify({"MESSAGE": "JSON load error"}), 405
-
 
 @app.route('/testgetclients', methods=['GET'])
 def testgetclients():
@@ -178,11 +198,8 @@ def postit():
 # Set the base route to be the react index.html
 @app.route('/')
 def index():
-    return "<h1>Welcome to our server !!</h1>",200
-
-    #use this instead if linking to a raact app on the same server
-    #make sure and update the app = Flask(...) line above for the same
-    #return app.send_static_file('index.html') 
+    
+    return app.send_static_file('index.html') 
 
 def main():
     '''The threaded option for concurrent accesses, 0.0.0.0 host says listen to all network interfaces (leaving this off changes this to local (same host) only access, port is the port listened on -- this must be open in your firewall or mapped out if within a Docker container. In Heroku, the heroku runtime sets this value via the PORT environment variable (you are not allowed to hard code it) so set it from this variable and give a default value (8118) for when we execute locally.  Python will tell us if the port is in use.  Start by using a value > 8000 as these are likely to be available.
