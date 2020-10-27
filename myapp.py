@@ -1,3 +1,40 @@
+Skip to content
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@henryanderson64 
+Learn Git and GitHub without any code!
+Using the Hello World guide, you’ll start a branch, write comments, and open a pull request.
+
+
+lukelewis66
+/
+handyhelp-flask-backend
+2
+0
+0
+Code
+Issues
+Pull requests
+1
+Actions
+Projects
+Wiki
+Security
+Insights
+handyhelp-flask-backend/myapp.py /
+@noas1019
+noas1019 Noa - environment variables now read from .env
+Latest commit 151b2a6 2 hours ago
+ History
+ 2 contributors
+@noas1019@lukelewis66
+175 lines (147 sloc)  6.26 KB
+  
 # myapp.py
 ''' 
     This file is based off of this tutorial: https://stackabuse.com/deploying-a-flask-application-to-heroku/ 
@@ -5,14 +42,8 @@
     License: UCSB BSD -- see LICENSE file in this repository
 '''
 
-<<<<<<< HEAD
-import os, json
-import datetime
-from flask import Flask, request, jsonify, make_response
-=======
 import os, json, boto3
 from flask import Flask, request, jsonify, make_response, redirect
->>>>>>> main
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
 from FirebaseHelpers import getDictFromList
@@ -73,25 +104,6 @@ cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-@app.route('/addlisting/', methods=['POST'])
-def addlisting():
-    body = json.loads(request.data)
-    data = {
-        u'active': body["active"],
-        u'client': body["client"],
-        u'title': body["title"],
-        u'description': body["description"],
-        u'images': body["images"],
-        u'skilltags': body["skilltags"],
-        u'date_posted': datetime.datetime.now(),
-    }
-    new_listing_ref = db.collection(u'listings').document() #get the auto generated document id
-    new_listing_ref.set(data)
-    print(new_listing_ref.id)
-    
-
-    return new_listing_ref.id, 200
-
 @app.route('/getclients/', methods=['GET'])
 def getclients():
     result = db.collection('clients').get()
@@ -102,10 +114,8 @@ def getclients():
 def addclient():
     try:
         data = json.loads(request.data)
-        db.collection()
-        return jsonify({"MESSAGE": "User added"}), 200
     except ValueError:
-        return jsonify({"MESSAGE": "JSON load error"}), 405
+        return jsonify({"MESSAGE": "JSON load error"}),405
 
 @app.route('/testgetclients', methods=['GET'])
 def testgetclients():
@@ -122,11 +132,18 @@ def getcontractors():
 @app.route('/addcontractor', methods=['POST'])
 def addcontractor():
     try:
-        data = json.loads(request.data)
-        db.collection('contractors').add()
-        return jsonify({"MESSAGE": "User added"}),
+        body = json.loads(request.data)
+        data = {
+            u'name' : body["name"],
+            u'email': body["email"],
+            u'password' : body["password"],
+        }
+        newClient = db.collection(u'contractors').document()
+        newCLient.set(data)
+        return jsonify(newClient.id),
     except ValueError:
         return jsonify({"MESSAGE": "JSON load error"}), 405
+
 
 @app.route('/getreviews', methods=['GET'])
 def getreviews():
@@ -209,3 +226,16 @@ def main():
 
 if __name__ == '__main__':
     main()
+© 2020 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
+
