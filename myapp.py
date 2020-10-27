@@ -6,6 +6,7 @@
 '''
 
 import os, json
+import datetime
 from flask import Flask, request, jsonify, make_response
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
@@ -50,6 +51,25 @@ Note that flask automatically redirects routes without a final slash (/) to one 
 cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
+
+@app.route('/addlisting/', methods=['POST'])
+def addlisting():
+    body = json.loads(request.data)
+    data = {
+        u'active': body["active"],
+        u'client': body["client"],
+        u'title': body["title"],
+        u'description': body["description"],
+        u'images': body["images"],
+        u'skilltags': body["skilltags"],
+        u'date_posted': datetime.datetime.now(),
+    }
+    new_listing_ref = db.collection(u'listings').document() #get the auto generated document id
+    new_listing_ref.set(data)
+    print(new_listing_ref.id)
+    
+
+    return new_listing_ref.id, 200
 
 @app.route('/getclients/', methods=['GET'])
 def getclients():
