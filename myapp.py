@@ -15,6 +15,8 @@ from flask import Flask, request, jsonify, make_response, redirect
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
 from FirebaseHelpers import getDictFromList
+from dotenv import load_dotenv
+load_dotenv(override=True)
 
 #use this if linking to a reaact app on the same server
 app = Flask(__name__, static_folder='./build', static_url_path='/')
@@ -59,9 +61,9 @@ def upload():
     uploaded_file = request.files.get('file')
     if request.method == "POST":
         session = boto3.Session(
-            aws_access_key_id=os.environ['ACCESS_KEY'],
-            aws_secret_access_key=os.environ['SECRET_KEY'],
-            region_name='us-west-1',
+            aws_access_key_id=os.getenv('ACCESS_KEY'),
+            aws_secret_access_key=os.getenv('SECRET_KEY'),
+            region_name=os.getenv('REGION_NAME'),
         )
 
         s3 = session.resource('s3')
