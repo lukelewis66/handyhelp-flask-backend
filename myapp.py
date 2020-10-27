@@ -12,8 +12,7 @@ from firebase_admin import credentials, firestore, initialize_app
 from FirebaseHelpers import getDictFromList
 
 #use this if linking to a reaact app on the same server
-#app = Flask(__name__, static_folder='./build', static_url_path='/')
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./build', static_url_path='/')
 DEBUG=True
 
 
@@ -46,9 +45,9 @@ Note that flask automatically redirects routes without a final slash (/) to one 
 '''
 
 ### uploads given image to the bucket
-@app.route("/upload", methods=['POST'])
+@app.route("/upload", methods=['POST', 'GET'])
 def upload():
-    uploaded_file = request.files['myfile']
+    uploaded_file = request.files.get('file')
     if request.method == "POST":
         session = boto3.Session(
             aws_access_key_id=os.environ['ACCESS_KEY'],
@@ -60,7 +59,7 @@ def upload():
 
         s3.Bucket('handyhelpimages').put_object(Key=f'{uploaded_file.filename}', Body=uploaded_file)
 
-        return redirect("/")
+        return ''
 
 cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
 firebase_admin.initialize_app(cred)
@@ -161,15 +160,8 @@ def postit():
 # Set the base route to be the react index.html
 @app.route('/')
 def index():
-    ### Temporary testing for upload_file function, will route to React index.html later
-    return '''<form method=POST enctype=multipart/form-data action="upload">
-    <input type=file name=myfile>
-    <input type=submit>
-    </form>''' 
-
-    #use this instead if linking to a raact app on the same server
-    #make sure and update the app = Flask(...) line above for the same
-    #return app.send_static_file('index.html') 
+    
+    return app.send_static_file('index.html') 
 
 def main():
     '''The threaded option for concurrent accesses, 0.0.0.0 host says listen to all network interfaces (leaving this off changes this to local (same host) only access, port is the port listened on -- this must be open in your firewall or mapped out if within a Docker container. In Heroku, the heroku runtime sets this value via the PORT environment variable (you are not allowed to hard code it) so set it from this variable and give a default value (8118) for when we execute locally.  Python will tell us if the port is in use.  Start by using a value > 8000 as these are likely to be available.
