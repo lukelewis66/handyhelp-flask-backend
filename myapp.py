@@ -61,7 +61,7 @@ def getclients():
 def addclient():
     try:
         data = json.loads(request.data)
-        db.collection('clients').add({ID: data.ID,Name: data.Name, Location: data.Location, Email: data.Email, PhoneNumber: data.PhoneNumber,})
+        db.collection()
         return jsonify({"MESSAGE": "User added"}), 200
     except ValueError:
         return jsonify({"MESSAGE": "JSON load error"}), 405
@@ -80,10 +80,10 @@ def getcontractors():
     return jsonify(records), 200
 
 @app.route('/addcontractor', methods=['POST'])
-def addclient():
+def addcontractor():
     try:
         data = json.loads(request.data)
-        db.collection('contractors').add({ID: data.ID,Name: data.Name, Location: data.Location, Skilltags: data.Skilltags, Rating: data.Rating, ProfilePicture: data.ProfilePicture, Email: data.Email, PhoneNumber: data.PhoneNumber, LastActice: data.LastActive})
+        db.collection('contractors').add()
         return jsonify({"MESSAGE": "User added"}),
     except ValueError:
         return jsonify({"MESSAGE": "JSON load error"}), 405
