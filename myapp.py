@@ -1,40 +1,3 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@henryanderson64 
-Learn Git and GitHub without any code!
-Using the Hello World guide, you’ll start a branch, write comments, and open a pull request.
-
-
-lukelewis66
-/
-handyhelp-flask-backend
-2
-0
-0
-Code
-Issues
-Pull requests
-1
-Actions
-Projects
-Wiki
-Security
-Insights
-handyhelp-flask-backend/myapp.py /
-@noas1019
-noas1019 Noa - environment variables now read from .env
-Latest commit 151b2a6 2 hours ago
- History
- 2 contributors
-@noas1019@lukelewis66
-175 lines (147 sloc)  6.26 KB
-  
 # myapp.py
 ''' 
     This file is based off of this tutorial: https://stackabuse.com/deploying-a-flask-application-to-heroku/ 
@@ -53,7 +16,6 @@ load_dotenv(override=True)
 #use this if linking to a reaact app on the same server
 app = Flask(__name__, static_folder='./build', static_url_path='/')
 DEBUG=True
-
 
 ### CORS section
 @app.after_request
@@ -113,9 +75,17 @@ def getclients():
 @app.route('/addclient', methods=['POST'])
 def addclient():
     try:
-        data = json.loads(request.data)
+        body = json.loads(request.data)
+        data = {
+            u'name'     : body["name"],
+            u'email'    : body["email"],
+            u'password' : body["password"],
+        }
+        newClient = db.collection(u'clients').document()
+        newClient.set(data)
+        return jsonify(newClient.id),
     except ValueError:
-        return jsonify({"MESSAGE": "JSON load error"}),405
+        return jsonify({"MESSAGE": "JSON load error"}), 405
 
 @app.route('/testgetclients', methods=['GET'])
 def testgetclients():
@@ -134,12 +104,12 @@ def addcontractor():
     try:
         body = json.loads(request.data)
         data = {
-            u'name' : body["name"],
-            u'email': body["email"],
+            u'name'     : body["name"],
+            u'email'    : body["email"],
             u'password' : body["password"],
         }
         newClient = db.collection(u'contractors').document()
-        newCLient.set(data)
+        newClient.set(data)
         return jsonify(newClient.id),
     except ValueError:
         return jsonify({"MESSAGE": "JSON load error"}), 405
@@ -226,16 +196,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-© 2020 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
-
