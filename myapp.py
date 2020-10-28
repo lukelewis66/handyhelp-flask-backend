@@ -5,6 +5,11 @@
     License: UCSB BSD -- see LICENSE file in this repository
 '''
 
+import os, json
+from os.path import join, dirname
+from dotenv import load_dotenv
+import datetime
+from flask import Flask, request, jsonify, make_response
 import os, json, boto3
 from flask import Flask, request, jsonify, make_response, redirect
 import firebase_admin
@@ -17,6 +22,8 @@ load_dotenv(override=True)
 app = Flask(__name__, static_folder='./build', static_url_path='/')
 DEBUG=True
 
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 ### CORS section
 @app.after_request
@@ -46,6 +53,8 @@ def after_request_func(response):
 Note that flask automatically redirects routes without a final slash (/) to one with a final slash (e.g. /getmsg redirects to /getmsg/). Curl does not handle redirects but instead prints the updated url. The browser handles redirects (i.e. takes them). You should always code your routes with both a start/end slash.
 '''
 
+
+
 ### uploads given image to the bucket
 @app.route("/upload", methods=['POST', 'GET'])
 def upload():
@@ -67,6 +76,46 @@ cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
+# ----------------------------------------------------------------------------------------------------------------
+#   LISTING
+# ----------------------------------------------------------------------------------------------------------------
+@app.route('/addlisting/', methods=['POST'])
+def addlisting():
+    body = json.loads(request.data)
+    data = {
+        u'active': body["active"],
+        u'client': body["client"],
+        u'title': body["title"],
+        u'description': body["description"],
+        u'images': body["images"],
+        u'skilltags': body["skilltags"],
+        u'date_posted': datetime.datetime.now(),
+    }
+    new_listing_ref = db.collection(u'listings').document() #get the auto generated document id
+    new_listing_ref.set(data)
+    return new_listing_ref.id, 200
+
+@app.route('/getlistings', methods=['GET'])
+def getlistings():
+    result = db.collection('listings').get()
+    records = getDictFromList(result)
+    #test for gitignore
+    return jsonify(records), 200
+
+@app.route('/updatelistingimages', methods=['POST'])
+def updatelistingimages():
+    body = json.loads(request.data)
+    listingID = body["listingID"]
+    imageUrls = body["imageUrls"]
+    existing_listing_ref = db.collection(u'listings').document(listingID)
+    existing_listing_ref.set({
+        "images": imageUrls
+    }, merge=True)
+    return "success", 200
+
+# ----------------------------------------------------------------------------------------------------------------
+#   CLIENT
+# ----------------------------------------------------------------------------------------------------------------
 @app.route('/getclients/', methods=['GET'])
 def getclients():
     result = db.collection('clients').get()
@@ -86,6 +135,10 @@ def testgetclients():
     all_clients = [doc.to_dict() for doc in clients_ref.stream()]
     return jsonify(all_clients)
 
+
+# ----------------------------------------------------------------------------------------------------------------
+# CONTRACTOR
+# ----------------------------------------------------------------------------------------------------------------
 @app.route('/getcontractors/', methods=['GET'])
 def getcontractors():
     result = db.collection('contractors').get()
@@ -98,18 +151,20 @@ def getreviews():
     records = getDictFromList(result)
     return jsonify(records), 200
 
-@app.route('/getlistings', methods=['GET'])
-def getlistings():
-    result = db.collection('listings').get()
-    records = getDictFromList(result)
-    #test for gitignore
-    return jsonify(records), 200
+# ----------------------------------------------------------------------------------------------------------------
+# CONTRACTS
+# ----------------------------------------------------------------------------------------------------------------
 
 @app.route('/getcontracts', methods=['GET'])
 def getcontracts():
     result = db.collection('contracts').get()
     records = getDictFromList(result)
     return jsonify(records), 200
+
+
+
+
+
 
 @app.route('/api/getmsg/', methods=['GET'])
 def respond():
