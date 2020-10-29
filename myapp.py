@@ -5,12 +5,10 @@
     License: UCSB BSD -- see LICENSE file in this repository
 '''
 
-import os, json
-from os.path import join, dirname
-from dotenv import load_dotenv
-import datetime
-from flask import Flask, request, jsonify, make_response
 import os, json, boto3
+from botocore.config import Config
+from os.path import join, dirname
+import datetime
 from flask import Flask, request, jsonify, make_response, redirect
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
@@ -53,23 +51,21 @@ def after_request_func(response):
 Note that flask automatically redirects routes without a final slash (/) to one with a final slash (e.g. /getmsg redirects to /getmsg/). Curl does not handle redirects but instead prints the updated url. The browser handles redirects (i.e. takes them). You should always code your routes with both a start/end slash.
 '''
 
-
-
-### uploads given image to the bucket
-@app.route("/upload", methods=['POST', 'GET'])
-def upload():
-    uploaded_file = request.files.get('file')
-    if request.method == "POST":
-        session = boto3.Session(
+### boto3 session for any S3 functions
+session = boto3.Session(
             aws_access_key_id=os.getenv('ACCESS_KEY'),
             aws_secret_access_key=os.getenv('SECRET_KEY'),
             region_name=os.getenv('REGION_NAME'),
         )
+s3 = session.resource('s3')
 
-        s3 = session.resource('s3')
-
-        s3.Bucket('handyhelpimages').put_object(Key=f'{uploaded_file.filename}', Body=uploaded_file)
-
+### uploads given image to the bucket named by the UID
+@app.route("/upload", methods=['POST', 'GET'])
+def upload():
+    uploaded_file = request.files.get('file')
+    UID = request.form['bucket']
+    if request.method == "POST":
+        s3.Bucket(UID).put_object(Key=f'{uploaded_file.filename}', Body=uploaded_file)
         return ''
 
 cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
