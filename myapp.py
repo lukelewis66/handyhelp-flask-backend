@@ -72,7 +72,7 @@ def getclients():
     records = getDictFromList(result)
     return jsonify(records), 200
 
-@app.route('/addclient', methods=['POST'])
+@app.route('/addclient/', methods=['POST'])
 def addclient():
     try:
         body = json.loads(request.data)
@@ -99,7 +99,7 @@ def getcontractors():
     records = getDictFromList(result)
     return jsonify(records), 200
 
-@app.route('/addcontractor', methods=['POST'])
+@app.route('/addcontractor/', methods=['POST'])
 def addcontractor():
     try:
         body = json.loads(request.data)
@@ -119,6 +119,13 @@ def addcontractor():
 def getreviews():
     result = db.collection('reviews').get()
     records = getDictFromList(result)
+    return jsonify(records), 200
+
+@app.route('/getlisting', methods=['GET'])
+def getlisting():
+    result = db.collection('listings').document(requestOptions)
+    records = getDictFromList(result)
+    #test for gitignore
     return jsonify(records), 200
 
 @app.route('/getlistings', methods=['GET'])
