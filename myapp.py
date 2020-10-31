@@ -64,9 +64,13 @@ s3 = session.resource('s3')
 def upload():
     uploaded_file = request.files.get('file')
     UID = request.form['bucket']
-    if request.method == "POST":
-        s3.Bucket(UID).put_object(Key=f'{uploaded_file.filename}', Body=uploaded_file)
-        return ''
+    key = ''
+    if request.form['type'] == 'ProfilePic':
+        key = 'ProfilePic/' + uploaded_file.filename
+    else:
+        key = 'Listings/' + request.form['type'] + '/' + uploaded_file.filename
+    s3.Bucket(UID).put_object(Key=f'{key}', Body=uploaded_file)
+    return ''
 
 cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
 firebase_admin.initialize_app(cred)
