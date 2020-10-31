@@ -95,6 +95,15 @@ def addlisting():
     new_listing_ref.set(data)
     return new_listing_ref.id, 200
 
+# @app.route('/getclientlistings', methods=['GET'])
+# def getclientlistings():
+#     body = json.loads(request.data)
+#     UID = body["UID"]
+#     result = db.collection('listings').get()
+#     records = getDictFromList(result)
+    
+
+
 @app.route('/getlistings', methods=['GET'])
 def getlistings():
     result = db.collection('listings').get()
@@ -120,6 +129,7 @@ def updatelistingimages():
 def getclients():
     result = db.collection('clients').get()
     records = getDictFromList(result)
+    print('result')
     return jsonify(records), 200
 
 @app.route('/addclient', methods=['POST'])
