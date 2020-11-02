@@ -59,6 +59,20 @@ session = boto3.Session(
         )
 s3 = session.resource('s3')
 
+### initializes an empty bucket named after the given UID
+@app.route("/bucketinit", methods=['POST', 'GET'])
+def bucketinit():
+    requestUID = request.form['Bucket']
+    requestACL = request.form['ACL']
+    s3.create_bucket(
+        ACL=f'{requestACL}',
+        Bucket=f'{requestUID}',
+        CreateBucketConfiguration={
+          'LocationConstraint' : 'us-west-1'  
+        },
+    )
+    return ''
+
 ### uploads given image to the bucket named by the UID
 @app.route("/upload", methods=['POST', 'GET'])
 def upload():
