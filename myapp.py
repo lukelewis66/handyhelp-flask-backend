@@ -41,7 +41,6 @@ def after_request_func(response):
     else:
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         if origin:
-            print("here!")
             response.headers.add('Access-Control-Allow-Origin', origin)
 
     return response
@@ -75,6 +74,18 @@ def upload():
 cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
+
+# ----------------------------------------------------------------------------------------------------------------
+#   ACCOUNT
+# ----------------------------------------------------------------------------------------------------------------
+@app.route('/checkuserexists', methods=['GET'])
+def checkuserexist():
+    if "UID" in request.args:
+        UID = request.args.get("UID")
+        account_ref = db.collection('users').document(UID).get()
+        return {"exists" : account_ref.exists}, 200
+    else:
+        return "error", 400
 
 # ----------------------------------------------------------------------------------------------------------------
 #   LISTING
