@@ -41,7 +41,6 @@ def after_request_func(response):
     else:
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         if origin:
-            print("here!")
             response.headers.add('Access-Control-Allow-Origin', origin)
 
     return response
@@ -89,6 +88,42 @@ def upload():
 cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
+
+# ----------------------------------------------------------------------------------------------------------------
+#   ACCOUNT
+# ----------------------------------------------------------------------------------------------------------------
+@app.route('/checkuserexists', methods=['GET'])
+def checkuserexist():
+    if "UID" in request.args:
+        UID = request.args.get("UID")
+        account_ref = db.collection('users').document(UID).get()
+        return {"exists" : account_ref.exists}, 200
+    else:
+        return "error", 400
+
+@app.route('/createaccount', methods=['POST'])
+def createaccount():
+    body = json.loads(request.data)
+    UID = body["UID"]
+    data = {
+        'name': body["name"],
+        'phone': body["phone"],
+        'email': body["email"],
+        'role': body["role"],
+        'location': body["location"],
+        'date_created': datetime.datetime.now(),
+    }
+    new_user_ref = db.collection('users').document(UID)
+    new_user_ref.set(data)
+    if (body["role"] == "contractor"):
+        new_contractor_ref = db.collection('contractors').document(UID)
+        contractor_data = {
+            'bio': "",
+            'profilepic': "",
+            'skilltags': [],
+        }
+        new_contractor_ref.set(contractor_data)
+    return "success", 200
 
 # ----------------------------------------------------------------------------------------------------------------
 #   LISTING
