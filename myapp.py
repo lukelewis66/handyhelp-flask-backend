@@ -87,6 +87,30 @@ def checkuserexist():
     else:
         return "error", 400
 
+@app.route('/createaccount', methods=['POST'])
+def createaccount():
+    body = json.loads(request.data)
+    UID = body["UID"]
+    data = {
+        'name': body["name"],
+        'phone': body["phone"],
+        'email': body["email"],
+        'role': body["role"],
+        'location': body["location"],
+        'date_created': datetime.datetime.now(),
+    }
+    new_user_ref = db.collection('users').document(UID)
+    new_user_ref.set(data)
+    if (body["role"] == "contractor"):
+        new_contractor_ref = db.collection('contractors').document(UID)
+        contractor_data = {
+            'bio': "",
+            'profilepic': "",
+            'skilltags': [],
+        }
+        new_contractor_ref.set(contractor_data)
+    return "success", 200
+
 # ----------------------------------------------------------------------------------------------------------------
 #   LISTING
 # ----------------------------------------------------------------------------------------------------------------
