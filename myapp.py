@@ -1,9 +1,6 @@
 # myapp.py
-''' 
-    This file is based off of this tutorial: https://stackabuse.com/deploying-a-flask-application-to-heroku/ 
-    Author: Chandra Krintz, 
-    License: UCSB BSD -- see LICENSE file in this repository
-'''
+
+
 
 import os, json, boto3
 from botocore.config import Config
@@ -20,8 +17,10 @@ load_dotenv(override=True)
 app = Flask(__name__, static_folder='./build', static_url_path='/')
 DEBUG=True
 
+
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
+
 
 ### CORS section
 @app.after_request
@@ -46,9 +45,7 @@ def after_request_func(response):
     return response
 ### end CORS section
 
-'''
-Note that flask automatically redirects routes without a final slash (/) to one with a final slash (e.g. /getmsg redirects to /getmsg/). Curl does not handle redirects but instead prints the updated url. The browser handles redirects (i.e. takes them). You should always code your routes with both a start/end slash.
-'''
+
 
 ### boto3 session for any S3 functions
 session = boto3.Session(
@@ -174,6 +171,7 @@ def updatelistingimages():
 # ----------------------------------------------------------------------------------------------------------------
 #   CLIENT
 # ----------------------------------------------------------------------------------------------------------------
+
 @app.route('/getclients/', methods=['GET'])
 def getclients():
     result = db.collection('clients').get()
@@ -181,12 +179,20 @@ def getclients():
     print('result')
     return jsonify(records), 200
 
-@app.route('/addclient', methods=['POST'])
+@app.route('/addclient/', methods=['POST'])
 def addclient():
     try:
-        data = json.loads(request.data)
+        body = json.loads(request.data)
+        data = {
+            u'name'     : body["name"],
+            u'email'    : body["email"],
+            u'password' : body["password"],
+        }
+        newClient = db.collection(u'clients').document()
+        newClient.set(data)
+        return jsonify(newClient.id),
     except ValueError:
-        return jsonify({"MESSAGE": "JSON load error"}),405
+        return jsonify({"MESSAGE": "JSON load error"}), 405
 
 @app.route('/testgetclients', methods=['GET'])
 def testgetclients():
@@ -204,15 +210,59 @@ def getcontractors():
     records = getDictFromList(result)
     return jsonify(records), 200
 
+@app.route('/addcontractor/', methods=['POST'])
+def addcontractor():
+    try:
+        body = json.loads(request.data)
+        data = {
+            u'name'     : body["name"],
+            u'email'    : body["email"],
+            u'password' : body["password"],
+        }
+        newClient = db.collection(u'contractors').document()
+        newClient.set(data)
+        return jsonify(newClient.id),
+    except ValueError:
+        return jsonify({"MESSAGE": "JSON load error"}), 405
+
+
 @app.route('/getreviews', methods=['GET'])
 def getreviews():
     result = db.collection('reviews').get()
     records = getDictFromList(result)
     return jsonify(records), 200
 
+@app.route('/isClient', methods=['GET'])
+def isCLient():
+    UID = request.args.get("UID")
+    result = db.collection('users').document(UID).get()
+    records = getDictFromList(result)
+    return jsonify(records), 200
+
+@app.route('/getlisting', methods=['GET'])
+def getlisting():
+    LID = request.args.get("LID")
+    print(LID)
+    result = db.collection('listings').document(LID[4:]).get()
+    print(type(result.to_dict()))
+    #test for gitignore
+
+    return jsonify(result.to_dict()), 200
+
+@app.route('/getcontractor', methods=['GET'])
+def getcontractor():
+    UID = request.args.get("UID")
+    print(UID)
+    result = db.collection('contractors').document(UID[4:]).get()
+    print(type(result.to_dict()))
+    #test for gitignore
+
+    return jsonify(result.to_dict()), 200
+
 # ----------------------------------------------------------------------------------------------------------------
 # CONTRACTS
 # ----------------------------------------------------------------------------------------------------------------
+
 
 @app.route('/getcontracts', methods=['GET'])
 def getcontracts():
@@ -247,10 +297,7 @@ def respond():
 
 @app.route('/api/keys/', methods=['POST']) 
 def postit(): 
-    '''
-    Implement a POST api for key management.
-    Note that flask handles request.method == OPTIONS for us automatically -- and calls after_request_func (above)after each request to satisfy CORS
-    '''
+    
     response = {}
     #only accept json content type
     if request.headers['content-type'] != 'application/json':
