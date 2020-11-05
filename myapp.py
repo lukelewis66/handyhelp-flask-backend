@@ -2,12 +2,10 @@
 
 
 
-import os, json
-from os.path import join, dirname
-from dotenv import load_dotenv
-import datetime
-from flask import Flask, request, jsonify, make_response
 import os, json, boto3
+from botocore.config import Config
+from os.path import join, dirname
+import datetime
 from flask import Flask, request, jsonify, make_response, redirect
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
@@ -42,7 +40,6 @@ def after_request_func(response):
     else:
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         if origin:
-            print("here!")
             response.headers.add('Access-Control-Allow-Origin', origin)
 
     return response
@@ -50,28 +47,80 @@ def after_request_func(response):
 
 
 
-
-
-### uploads given image to the bucket
-@app.route("/upload", methods=['POST', 'GET'])
-def upload():
-    uploaded_file = request.files.get('file')
-    if request.method == "POST":
-        session = boto3.Session(
+### boto3 session for any S3 functions
+session = boto3.Session(
             aws_access_key_id=os.getenv('ACCESS_KEY'),
             aws_secret_access_key=os.getenv('SECRET_KEY'),
             region_name=os.getenv('REGION_NAME'),
         )
+s3 = session.resource('s3')
 
-        s3 = session.resource('s3')
+### initializes an empty bucket named after the given UID
+@app.route("/bucketinit", methods=['POST', 'GET'])
+def bucketinit():
+    requestUID = request.form['Bucket']
+    requestACL = request.form['ACL']
+    s3.create_bucket(
+        ACL=f'{requestACL}',
+        Bucket=f'{requestUID}',
+        CreateBucketConfiguration={
+          'LocationConstraint' : 'us-west-1'  
+        },
+    )
+    return ''
 
-        s3.Bucket('handyhelpimages').put_object(Key=f'{uploaded_file.filename}', Body=uploaded_file)
-
-        return ''
+### uploads given image to the bucket named by the UID
+@app.route("/upload", methods=['POST', 'GET'])
+def upload():
+    uploaded_file = request.files.get('file')
+    UID = request.form['bucket']
+    key = ''
+    if request.form['type'] == 'ProfilePic':
+        key = 'ProfilePic/' + uploaded_file.filename
+    else:
+        key = 'Listings/' + request.form['type'] + '/' + uploaded_file.filename
+    s3.Bucket(UID).put_object(Key=f'{key}', Body=uploaded_file)
+    return ''
 
 cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
+
+# ----------------------------------------------------------------------------------------------------------------
+#   ACCOUNT
+# ----------------------------------------------------------------------------------------------------------------
+@app.route('/checkuserexists', methods=['GET'])
+def checkuserexist():
+    if "UID" in request.args:
+        UID = request.args.get("UID")
+        account_ref = db.collection('users').document(UID).get()
+        return {"exists" : account_ref.exists}, 200
+    else:
+        return "error", 400
+
+@app.route('/createaccount', methods=['POST'])
+def createaccount():
+    body = json.loads(request.data)
+    UID = body["UID"]
+    data = {
+        'name': body["name"],
+        'phone': body["phone"],
+        'email': body["email"],
+        'role': body["role"],
+        'location': body["location"],
+        'date_created': datetime.datetime.now(),
+    }
+    new_user_ref = db.collection('users').document(UID)
+    new_user_ref.set(data)
+    if (body["role"] == "contractor"):
+        new_contractor_ref = db.collection('contractors').document(UID)
+        contractor_data = {
+            'bio': "",
+            'profilepic': "",
+            'skilltags': [],
+        }
+        new_contractor_ref.set(contractor_data)
+    return "success", 200
 
 # ----------------------------------------------------------------------------------------------------------------
 #   LISTING
@@ -91,6 +140,15 @@ def addlisting():
     new_listing_ref = db.collection(u'listings').document() #get the auto generated document id
     new_listing_ref.set(data)
     return new_listing_ref.id, 200
+
+# @app.route('/getclientlistings', methods=['GET'])
+# def getclientlistings():
+#     body = json.loads(request.data)
+#     UID = body["UID"]
+#     result = db.collection('listings').get()
+#     records = getDictFromList(result)
+    
+
 
 @app.route('/getlistings', methods=['GET'])
 def getlistings():
@@ -118,6 +176,7 @@ def updatelistingimages():
 def getclients():
     result = db.collection('clients').get()
     records = getDictFromList(result)
+    print('result')
     return jsonify(records), 200
 
 @app.route('/addclient/', methods=['POST'])
