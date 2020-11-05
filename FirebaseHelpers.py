@@ -22,3 +22,4 @@ def getDictFromList(result):
             records[i][key] = item[key]
         
     return records
+    

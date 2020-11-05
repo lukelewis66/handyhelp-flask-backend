@@ -1,18 +1,12 @@
 # myapp.py
-''' 
-    This file is based off of this tutorial: https://stackabuse.com/deploying-a-flask-application-to-heroku/ 
-    Author: Chandra Krintz, 
-    License: UCSB BSD -- see LICENSE file in this repository
-'''
 
-<<<<<<< HEAD
-=======
+
+
 import os, json
 from os.path import join, dirname
 from dotenv import load_dotenv
 import datetime
 from flask import Flask, request, jsonify, make_response
->>>>>>> origin
 import os, json, boto3
 from flask import Flask, request, jsonify, make_response, redirect
 import firebase_admin
@@ -25,12 +19,11 @@ load_dotenv(override=True)
 app = Flask(__name__, static_folder='./build', static_url_path='/')
 DEBUG=True
 
-<<<<<<< HEAD
-=======
+
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
->>>>>>> origin
+
 ### CORS section
 @app.after_request
 def after_request_func(response):
@@ -55,9 +48,7 @@ def after_request_func(response):
     return response
 ### end CORS section
 
-'''
-Note that flask automatically redirects routes without a final slash (/) to one with a final slash (e.g. /getmsg redirects to /getmsg/). Curl does not handle redirects but instead prints the updated url. The browser handles redirects (i.e. takes them). You should always code your routes with both a start/end slash.
-'''
+
 
 
 
@@ -82,8 +73,6 @@ cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-<<<<<<< HEAD
-=======
 # ----------------------------------------------------------------------------------------------------------------
 #   LISTING
 # ----------------------------------------------------------------------------------------------------------------
@@ -124,7 +113,7 @@ def updatelistingimages():
 # ----------------------------------------------------------------------------------------------------------------
 #   CLIENT
 # ----------------------------------------------------------------------------------------------------------------
->>>>>>> origin
+
 @app.route('/getclients/', methods=['GET'])
 def getclients():
     result = db.collection('clients').get()
@@ -184,25 +173,37 @@ def getreviews():
     records = getDictFromList(result)
     return jsonify(records), 200
 
-<<<<<<< HEAD
-@app.route('/getlisting', methods=['GET'])
-def getlisting():
-    result = db.collection('listings').document(requestOptions)
+@app.route('/isClient', methods=['GET'])
+def isCLient():
+    UID = request.args.get("UID")
+    result = db.collection('users').document(UID).get()
     records = getDictFromList(result)
-    #test for gitignore
     return jsonify(records), 200
 
-@app.route('/getlistings', methods=['GET'])
-def getlistings():
-    result = db.collection('listings').get()
-    records = getDictFromList(result)
+@app.route('/getlisting', methods=['GET'])
+def getlisting():
+    LID = request.args.get("LID")
+    print(LID)
+    result = db.collection('listings').document(LID[4:]).get()
+    print(type(result.to_dict()))
     #test for gitignore
-    return jsonify(records), 200
-=======
+
+    return jsonify(result.to_dict()), 200
+
+@app.route('/getcontractor', methods=['GET'])
+def getcontractor():
+    UID = request.args.get("UID")
+    print(UID)
+    result = db.collection('contractors').document(UID[4:]).get()
+    print(type(result.to_dict()))
+    #test for gitignore
+
+    return jsonify(result.to_dict()), 200
+
 # ----------------------------------------------------------------------------------------------------------------
 # CONTRACTS
 # ----------------------------------------------------------------------------------------------------------------
->>>>>>> origin
+
 
 @app.route('/getcontracts', methods=['GET'])
 def getcontracts():
@@ -237,10 +238,7 @@ def respond():
 
 @app.route('/api/keys/', methods=['POST']) 
 def postit(): 
-    '''
-    Implement a POST api for key management.
-    Note that flask handles request.method == OPTIONS for us automatically -- and calls after_request_func (above)after each request to satisfy CORS
-    '''
+    
     response = {}
     #only accept json content type
     if request.headers['content-type'] != 'application/json':
