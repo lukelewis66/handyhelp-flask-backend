@@ -79,7 +79,7 @@ def upload():
     UID = request.form['bucket']
     key = ''
     if request.form['type'] == 'ProfilePic':
-        key = 'ProfilePic/' + uploaded_file.filename
+        key = 'ProfilePic'
     else:
         key = 'Listings/' + request.form['type'] + '/' + uploaded_file.filename
     s3.Bucket(UID).put_object(Key=f'{key}', Body=uploaded_file)
@@ -112,6 +112,7 @@ def createaccount():
         'role': body["role"],
         'location': body["location"],
         'date_created': datetime.datetime.now(),
+        'active': True,
     }
     new_user_ref = db.collection('users').document(UID)
     new_user_ref.set(data)
@@ -123,6 +124,34 @@ def createaccount():
             'skilltags': [],
         }
         new_contractor_ref.set(contractor_data)
+    return "success", 200
+
+@app.route('/checkuseractive', methods=['GET'])
+def checkuseractive():
+    if "UID" in request.args:
+        UID = request.args.get("UID")
+        user_ref = db.collection('users').document(UID).get()
+        user = user_ref.to_dict()
+        return {"active" : user["active"]}, 200
+    else:
+        return "error", 400
+
+@app.route('/deactivateaccount', methods=['POST'])
+def deactivateaccount():
+    UID = request.form['UID']
+    # body = json.loads(request.data)
+    # UID = body["UID"]
+    user_ref = db.collection('users').document(UID)
+    user_ref.update({ 'active' : False })
+    return "success", 200
+
+@app.route('/reactivateaccount', methods=['POST'])
+def reactivateaccount():
+    UID = request.form['UID']
+    # body = json.loads(request.data)
+    # UID = body["UID"]
+    user_ref = db.collection('users').document(UID)
+    user_ref.update({ 'active' : True })
     return "success", 200
 
 # ----------------------------------------------------------------------------------------------------------------
