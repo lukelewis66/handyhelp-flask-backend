@@ -1,7 +1,7 @@
 # myapp.py
 
 
-
+from math import sin, cos, sqrt, atan2, radians
 import os, json, boto3
 from botocore.config import Config
 from os.path import join, dirname
@@ -293,11 +293,65 @@ def getcontractor():
 # ----------------------------------------------------------------------------------------------------------------
 
 
+@app.route('/getrole', methods=['GET'])
+def getrole():
+    UID = request.args.get("UID")
+    print("UID :" + UID)
+    result = db.collection('users').document(UID).get()
+    print(result.to_dict())
+    #test for gitignore
+
+    return jsonify(result.to_dict()), 200
+
 @app.route('/getcontracts', methods=['GET'])
 def getcontracts():
     result = db.collection('contracts').get()
-    records = getDictFromList(result)
+    records = getDictFromList(result)   
     return jsonify(records), 200
+
+
+@app.route('/getdistance', methods=['GET'])
+def getdistance():
+    
+    
+    try:
+        UID1 = request.args.get("UID1")
+        UID2 = request.args.get("UID2")
+        print("UID1: " + UID1 + " | UID2: " + UID2)
+        user = db.collection('users').document(UID1).get()
+        other = db.collection('contractors').document(UID2).get()
+        lon1 = user.location[0]
+        lat1 = user.location[1]
+        lon2 = other.location[0]
+        lat2 = other.location[1]
+    except:
+        return jsonify(-1), 200
+
+    
+
+    print("[" + lat1 + "," + lon1 + "] => [" + lat2 + "," + lon2 + "]")
+    R = 6373.0
+
+    lat1 = radians(lat1)
+    lon1 = radians(lon1)
+    lat2 = radians(lat2)
+    lon2 = radians(lon2)
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+
+    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    distance = R * c
+
+    distance = distance/1.609
+
+    print("\n\nMiles:", distance)
+
+    return {"distance" : distance}, 200
+
+
 
 
 
