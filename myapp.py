@@ -152,6 +152,29 @@ def reactivateaccount():
     return "success", 200
 
 # ----------------------------------------------------------------------------------------------------------------
+#   USER
+# ----------------------------------------------------------------------------------------------------------------
+@app.route('/getusers/', methods=['GET'])
+def getusers():
+    result = db.collection('users').get()
+    records = getDictFromList(result)
+    print(records)
+    return jsonify(records), 200
+
+@app.route('/editInfo/', methods=['POST'])
+def editInfo():
+    UID = request.form['UID']
+    PHONE = request.form['phone']
+    NAME = request.form['name']
+    EMAIL = request.form['email']
+    # body = json.loads(request.data)
+    # UID = body["UID"]
+    user_ref = db.collection('users').document(UID)
+    user_ref.update({ 'name' : NAME })
+    user_ref.update({ 'phone' : PHONE })
+    user_ref.update({ 'email' : EMAIL })
+    return "success", 200
+# ----------------------------------------------------------------------------------------------------------------
 #   LISTING
 # ----------------------------------------------------------------------------------------------------------------
 @app.route('/addlisting/', methods=['POST'])
