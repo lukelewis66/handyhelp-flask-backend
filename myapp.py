@@ -3,6 +3,7 @@
 
 from math import sin, cos, sqrt, atan2, radians
 import os, json, boto3
+from google import maps
 from botocore.config import Config
 from os.path import join, dirname
 import datetime
@@ -297,26 +298,31 @@ def getdistance():
         lat2 = other.location[1]
     except:
         return jsonify(-1), 200
+    
+    origin = new google.maps.LatLng(lat1, lon1);
+    destination = new google.maps.LatLng(lat2, lon2);
+
+    service = new google.maps.DistanceMatrixService();
+    service.getDistanceMatrix(
+    {
+    origins: [origin1, origin2],
+    destinations: [destinationA, destinationB],
+    travelMode: 'DRIVING',
+    transitOptions: TransitOptions,
+    drivingOptions: DrivingOptions,
+    unitSystem: UnitSystem,
+    avoidHighways: Boolean,
+    avoidTolls: Boolean,
+    }, callback);
+
+function callback(response, status) {
+  print("geoDistance response:" + respose + " | status: " + status)
+}
 
     
 
     print("[" + lat1 + "," + lon1 + "] => [" + lat2 + "," + lon2 + "]")
-    R = 6373.0
-
-    lat1 = radians(lat1)
-    lon1 = radians(lon1)
-    lat2 = radians(lat2)
-    lon2 = radians(lon2)
-
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-
-    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
-    distance = R * c
-
-    distance = distance/1.609
+    
 
     print("\n\nMiles:", distance)
 
