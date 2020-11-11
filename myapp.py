@@ -60,14 +60,13 @@ s3 = session.resource('s3')
 def bucketinit():
     requestUID = request.form['Bucket']
     requestACL = request.form['ACL']
-    response = s3.create_bucket(
+    s3.create_bucket(
         ACL=f'{requestACL}',
-        Bucket=f'{requestUID}',
+        Bucket=f'{requestUID.lower()}',
         CreateBucketConfiguration={
           'LocationConstraint' : 'us-west-1'  
         },
     )
-    print(response)
     return ''
 
 ### uploads given image to the bucket named by the UID
@@ -80,7 +79,7 @@ def upload():
         key = 'ProfilePic'
     else:
         key = 'Listings/' + request.form['type'] + '/' + uploaded_file.filename
-    s3.Bucket(UID).put_object(Key=f'{key}', Body=uploaded_file)
+    s3.Bucket(UID.lower()).put_object(ACL='public-read-write', Key=f'{key}', Body=uploaded_file)
     return ''
 
 # cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
