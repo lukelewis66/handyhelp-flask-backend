@@ -332,7 +332,7 @@ def isCLient():
 def getlisting():
     LID = request.args.get("LID")
     print(LID)
-    result = db.collection('listings').document(LID[4:]).get()
+    result = db.collection('listings').document(LID).get()
     print(type(result.to_dict()))
     #test for gitignore
 
