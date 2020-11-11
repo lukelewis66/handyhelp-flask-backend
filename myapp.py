@@ -3,7 +3,6 @@
 
 from math import sin, cos, sqrt, atan2, radians
 import os, json, boto3
-from google import maps
 from botocore.config import Config
 from os.path import join, dirname
 import datetime
@@ -311,51 +310,51 @@ def getcontracts():
     return jsonify(records), 200
 
 
-@app.route('/getdistance', methods=['GET'])
-def getdistance():
+# @app.route('/getdistance', methods=['GET'])
+# def getdistance():
     
     
-    try:
-        UID1 = request.args.get("UID1")
-        UID2 = request.args.get("UID2")
-        print("UID1: " + UID1 + " | UID2: " + UID2)
-        user = db.collection('users').document(UID1).get()
-        other = db.collection('contractors').document(UID2).get()
-        lon1 = user.location[0]
-        lat1 = user.location[1]
-        lon2 = other.location[0]
-        lat2 = other.location[1]
-    except:
-        return jsonify(-1), 200
+#     try:
+#         UID1 = request.args.get("UID1")
+#         UID2 = request.args.get("UID2")
+#         print("UID1: " + UID1 + " | UID2: " + UID2)
+#         user = db.collection('users').document(UID1).get()
+#         other = db.collection('contractors').document(UID2).get()
+#         lon1 = user.location[0]
+#         lat1 = user.location[1]
+#         lon2 = other.location[0]
+#         lat2 = other.location[1]
+#     except:
+#         return jsonify(-1), 200
     
-    origin = new google.maps.LatLng(lat1, lon1);
-    destination = new google.maps.LatLng(lat2, lon2);
+#     origin = new google.maps.LatLng(lat1, lon1);
+#     destination = new google.maps.LatLng(lat2, lon2);
 
-    service = new google.maps.DistanceMatrixService();
-    service.getDistanceMatrix(
-    {
-    origins: [origin1, origin2],
-    destinations: [destinationA, destinationB],
-    travelMode: 'DRIVING',
-    transitOptions: TransitOptions,
-    drivingOptions: DrivingOptions,
-    unitSystem: UnitSystem,
-    avoidHighways: Boolean,
-    avoidTolls: Boolean,
-    }, callback);
+#     service = new google.maps.DistanceMatrixService();
+#     service.getDistanceMatrix(
+#     {
+#     origins: [origin1, origin2],
+#     destinations: [destinationA, destinationB],
+#     travelMode: 'DRIVING',
+#     transitOptions: TransitOptions,
+#     drivingOptions: DrivingOptions,
+#     unitSystem: UnitSystem,
+#     avoidHighways: Boolean,
+#     avoidTolls: Boolean,
+#     }, callback);
 
-function callback(response, status) {
-  print("geoDistance response:" + respose + " | status: " + status)
-}
+# function callback(response, status) {
+#   print("geoDistance response:" + respose + " | status: " + status)
+# }
 
-    
-
-    print("[" + lat1 + "," + lon1 + "] => [" + lat2 + "," + lon2 + "]")
     
 
-    print("\n\nMiles:", distance)
+#     print("[" + lat1 + "," + lon1 + "] => [" + lat2 + "," + lon2 + "]")
+    
 
-    return {"distance" : distance}, 200
+#     print("\n\nMiles:", distance)
+
+#     return {"distance" : distance}, 200
 
 
 
