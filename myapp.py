@@ -82,7 +82,20 @@ def upload():
     s3.Bucket(UID).put_object(Key=f'{key}', Body=uploaded_file)
     return ''
 
-cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
+# cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
+ENV_KEYS = {
+    "type": "service_account",
+    "project_id": os.environ['FIREBASE_PROJECT_ID'],
+    "private_key_id": os.environ['FIREBASE_PRIVATE_KEY_ID'],
+    "private_key": os.environ['FIREBASE_PRIVATE_KEY'].replace("\\n", "\n"),
+    "client_email": os.environ['FIREBASE_CLIENT_EMAIL'],
+    "client_id": os.environ['FIREBASE_CLIENT_ID'],
+    "auth_uri": os.environ['FIREBASE_AUTH_URI'],
+    "token_uri": os.environ['FIREBASE_TOKEN_URI'],
+    "auth_provider_x509_cert_url": os.environ["FIREBASE_AUTH_PROVIDER_X509_CERT_URL"],
+    "client_x509_cert_url": os.environ['FIREBASE_CLIENT_X509_CERT_URL'],
+}
+cred = credentials.Certificate(ENV_KEYS)
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -151,6 +164,29 @@ def reactivateaccount():
     user_ref.update({ 'active' : True })
     return "success", 200
 
+# ----------------------------------------------------------------------------------------------------------------
+#   USER
+# ----------------------------------------------------------------------------------------------------------------
+@app.route('/getusers/', methods=['GET'])
+def getusers():
+    result = db.collection('users').get()
+    records = getDictFromList(result)
+    print(records)
+    return jsonify(records), 200
+
+@app.route('/editInfo/', methods=['POST'])
+def editInfo():
+    UID = request.form['UID']
+    PHONE = request.form['phone']
+    NAME = request.form['name']
+    EMAIL = request.form['email']
+    # body = json.loads(request.data)
+    # UID = body["UID"]
+    user_ref = db.collection('users').document(UID)
+    user_ref.update({ 'name' : NAME })
+    user_ref.update({ 'phone' : PHONE })
+    user_ref.update({ 'email' : EMAIL })
+    return "success", 200
 # ----------------------------------------------------------------------------------------------------------------
 #   LISTING
 # ----------------------------------------------------------------------------------------------------------------
@@ -412,7 +448,7 @@ def postit():
 @app.route('/')
 def index():
     
-    return app.send_static_file('index.html') 
+    return "hello!"
 
 def main():
     '''The threaded option for concurrent accesses, 0.0.0.0 host says listen to all network interfaces (leaving this off changes this to local (same host) only access, port is the port listened on -- this must be open in your firewall or mapped out if within a Docker container. In Heroku, the heroku runtime sets this value via the PORT environment variable (you are not allowed to hard code it) so set it from this variable and give a default value (8118) for when we execute locally.  Python will tell us if the port is in use.  Start by using a value > 8000 as these are likely to be available.
