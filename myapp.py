@@ -174,6 +174,14 @@ def getusers():
     print(records)
     return jsonify(records), 200
 
+@app.route('/getuser', methods=['GET'])
+def getuser():
+    UID = request.args.get("UID")
+    print("UID: ", UID)
+    user = db.collection('users').document(UID).get()
+    userDict = user.to_dict()
+    return jsonify(userDict), 200
+
 @app.route('/editInfo/', methods=['POST'])
 def editInfo():
     UID = request.form['UID']
@@ -275,6 +283,22 @@ def getcontractors():
     records = getDictFromList(result)
     return jsonify(records), 200
 
+
+@app.route('/getallcontractors', methods=['GET'])
+def getallcontractors():
+    allUsers = db.collection('users').get()
+    allUsersDict = getDictFromList(allUsers)
+    print("ALl users dict before: ", allUsersDict)
+    delete = [key for key in allUsersDict if allUsersDict[key]['role'] != "contractor"]
+    for key in delete: del allUsersDict[key]
+    print(allUsersDict)
+    for key in allUsersDict:
+        contractor_ref = db.collection('contractors').document(allUsersDict[key]['id']).get()
+        # contractor_ref = db.collection('contractors').document(user['id']).get()
+        allUsersDict[key].update(contractor_ref.to_dict())
+    return jsonify(allUsersDict)
+
+
 @app.route('/addcontractor/', methods=['POST'])
 def addcontractor():
     try:
@@ -308,7 +332,7 @@ def isCLient():
 def getlisting():
     LID = request.args.get("LID")
     print(LID)
-    result = db.collection('listings').document(LID[4:]).get()
+    result = db.collection('listings').document(LID).get()
     print(type(result.to_dict()))
     #test for gitignore
 
@@ -317,12 +341,15 @@ def getlisting():
 @app.route('/getcontractor', methods=['GET'])
 def getcontractor():
     UID = request.args.get("UID")
-    print(UID)
-    result = db.collection('contractors').document(UID[4:]).get()
-    print(type(result.to_dict()))
+    print("UID for getcontractor: ", UID)
+    user = db.collection('users').document(UID).get()
+    contractor = db.collection('contractors').document(UID).get()
+    userDict = user.to_dict()
+    userDict.update(contractor.to_dict())
+    #result = db.collection('contractors').document(UID).get()
     #test for gitignore
 
-    return jsonify(result.to_dict()), 200
+    return jsonify(userDict), 200
 
 # ----------------------------------------------------------------------------------------------------------------
 # CONTRACTS
