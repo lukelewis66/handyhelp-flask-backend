@@ -341,7 +341,7 @@ def getlisting():
 
 @app.route('/getcontractor', methods=['GET'])
 def getcontractor():
-    UID = request.args.get("UID")[4:]
+    UID = request.args.get("UID")
     print("UID for getcontractor: ", UID)
     user = db.collection('users').document(UID).get()
     contractor = db.collection('contractors').document(UID).get()
