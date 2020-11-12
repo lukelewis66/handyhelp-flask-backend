@@ -76,7 +76,7 @@ def upload():
     UID = request.form['bucket']
     key = ''
     if request.form['type'] == 'ProfilePic':
-        key = 'ProfilePic'
+        key = 'ProfilePic.png'
     else:
         key = 'Listings/' + request.form['type'] + '/' + uploaded_file.filename
     s3.Bucket(UID.lower()).put_object(ACL='public-read-write', Key=f'{key}', Body=uploaded_file)
@@ -321,6 +321,17 @@ def getcontractor():
     #test for gitignore
 
     return jsonify(userDict), 200
+
+@app.route('/updateprofilepicture', methods=['POST'])
+def updateprofilepicture():
+    body = json.loads(request.data)
+    UID = body["UID"]
+    imageUrls = body["imageUrls"]
+    existing_profilepicture_ref = db.collection('contractors').document(UID)
+    existing_profilepicture_ref.set({
+        "profilepic": imageUrls
+    }, merge=True)
+    return "success", 200
 
 # ----------------------------------------------------------------------------------------------------------------
 # CONTRACTS
