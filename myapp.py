@@ -187,13 +187,11 @@ def editInfo():
     UID = request.form['UID']
     PHONE = request.form['phone']
     NAME = request.form['name']
-    EMAIL = request.form['email']
     # body = json.loads(request.data)
     # UID = body["UID"]
     user_ref = db.collection('users').document(UID)
     user_ref.update({ 'name' : NAME })
     user_ref.update({ 'phone' : PHONE })
-    user_ref.update({ 'email' : EMAIL })
     return "success", 200
 # ----------------------------------------------------------------------------------------------------------------
 #   LISTING
@@ -350,6 +348,19 @@ def getcontractor():
     #test for gitignore
 
     return jsonify(userDict), 200
+
+@app.route('/editContractor/', methods=['POST'])
+def editContractor():
+    body = json.loads(request.data)
+    UID = body["UID"]
+    user_ref = db.collection('users').document(UID)
+    contractor_ref = db.collection('contractors').document(UID)
+    #db.contractor_ref.update({UID}, {$set: {'name': data.name}})
+    user_ref.update({'name' : body["name"]})
+    user_ref.update({'phone' : body["phone"]})
+    contractor_ref.update({'skilltags' : body["skilltags"]})
+    contractor_ref.update({'bio' : body["bio"]})
+    return "success", 200
 
 # ----------------------------------------------------------------------------------------------------------------
 # CONTRACTS
