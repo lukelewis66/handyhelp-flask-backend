@@ -76,7 +76,7 @@ def upload():
     UID = request.form['bucket']
     key = ''
     if request.form['type'] == 'ProfilePic':
-        key = 'ProfilePic'
+        key = 'ProfilePic.png'
     else:
         key = 'Listings/' + request.form['type'] + '/' + uploaded_file.filename
     s3.Bucket(UID.lower()).put_object(ACL='public-read-write', Key=f'{key}', Body=uploaded_file)
@@ -239,37 +239,8 @@ def updatelistingimages():
     }, merge=True)
     return "success", 200
 
-# ----------------------------------------------------------------------------------------------------------------
-#   CLIENT
-# ----------------------------------------------------------------------------------------------------------------
 
-@app.route('/getclients/', methods=['GET'])
-def getclients():
-    result = db.collection('clients').get()
-    records = getDictFromList(result)
-    print('result')
-    return jsonify(records), 200
 
-@app.route('/addclient/', methods=['POST'])
-def addclient():
-    try:
-        body = json.loads(request.data)
-        data = {
-            u'name'     : body["name"],
-            u'email'    : body["email"],
-            u'password' : body["password"],
-        }
-        newClient = db.collection(u'clients').document()
-        newClient.set(data)
-        return jsonify(newClient.id),
-    except ValueError:
-        return jsonify({"MESSAGE": "JSON load error"}), 405
-
-@app.route('/testgetclients', methods=['GET'])
-def testgetclients():
-    clients_ref = db.collection('clients')
-    all_clients = [doc.to_dict() for doc in clients_ref.stream()]
-    return jsonify(all_clients)
 
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -360,6 +331,17 @@ def editContractor():
     user_ref.update({'phone' : body["phone"]})
     contractor_ref.update({'skilltags' : body["skilltags"]})
     contractor_ref.update({'bio' : body["bio"]})
+
+@app.route('/updateprofilepicture', methods=['POST'])
+def updateprofilepicture():
+    body = json.loads(request.data)
+    UID = body["UID"]
+    imageUrls = body["imageUrls"]
+    existing_profilepicture_ref = db.collection('contractors').document(UID)
+    existing_profilepicture_ref.set({
+        "profilepic": imageUrls
+    }, merge=True)
+
     return "success", 200
 
 # ----------------------------------------------------------------------------------------------------------------
