@@ -125,6 +125,7 @@ def createaccount():
         'email': body["email"],
         'role': body["role"],
         'location': body["location"],
+        'location_string': body["location_string"],
         'date_created': datetime.datetime.now(),
         'active': True,
     }
