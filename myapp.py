@@ -79,9 +79,13 @@ def bucketinit():
 def upload():
     uploaded_file = request.files.get('file')
     UID = request.form['bucket']
+    Type = request.form['type']
+    ID = request.form['IDnum']
     key = ''
-    if request.form['type'] == 'ProfilePic':
+    if Type == 'ProfilePic':
         key = 'ProfilePic.png'
+    elif Type == 'Listing':
+        key = 'Listings/' + ID + '/' + uploaded_file.filename
     else:
         key = 'Listings/' + request.form['type'] + '/' + uploaded_file.filename
     s3.Bucket(UID.lower()).put_object(
@@ -131,6 +135,7 @@ def createaccount():
         'email': body["email"],
         'role': body["role"],
         'location': body["location"],
+        'location_string': body["location_string"],
         'date_created': datetime.datetime.now(),
         'active': True,
     }
@@ -263,6 +268,32 @@ def updatelistingimages():
 # ----------------------------------------------------------------------------------------------------------------
 # CONTRACTOR
 # ----------------------------------------------------------------------------------------------------------------
+@app.route('/addfeeditem/', methods=['POST'])
+def addfeeditem():
+    body = json.loads(request.data)
+    data = {
+        u'contractor': body["contractor"],
+        u'title': body["title"],
+        u'description': body["description"],
+        u'images': body["images"],
+        u'skilltags': body["skilltags"],
+        u'date_posted': datetime.datetime.now(),
+    }
+    new_feeditem_ref = db.collection(u'feeds').document() #get the auto generated document id
+    new_feeditem_ref.set(data)
+    return new_feeditem_ref.id, 200
+
+@app.route('/updatefeeditemimages', methods=['POST'])
+def updatefeeditemimages():
+    body = json.loads(request.data)
+    feedID = body["feedID"]
+    imageUrls = body["imageUrls"]
+    existing_feeditem_ref = db.collection(u'feeds').document(feedID)
+    existing_feeditem_ref.set({
+        "images": imageUrls
+    }, merge=True)
+    return "success", 200
+
 @app.route('/getcontractors/', methods=['GET'])
 def getcontractors():
     result = db.collection('contractors').get()
@@ -305,6 +336,18 @@ def addcontractor():
     except ValueError:
         return jsonify({"MESSAGE": "JSON load error"}), 405
 
+@app.route('/getfeeds', methods=['GET'])
+def getfeeds():
+    result = db.collection('feeds').get()
+    records = getDictFromList(result)
+    return jsonify(records), 200
+
+@app.route('/getfeeditem', methods=['GET'])
+def getfeeditem():
+    FID = request.args.get("FID")
+    print("FID for getfeeditem: ", FID)
+    result = db.collection('feeds').document(FID).get()
+    return jsonify(result.to_dict()), 200
 
 @app.route('/getreviews', methods=['GET'])
 def getreviews():
