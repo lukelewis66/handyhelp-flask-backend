@@ -277,6 +277,22 @@ def updatefeeditemimages():
     }, merge=True)
     return "success", 200
 
+@app.route('/getfeeditems', methods=['GET'])
+def getfeed():
+    result = db.collection('feeds').get()
+    records = getDictFromList(result)
+    #test for gitignore
+    return jsonify(records), 200
+
+@app.route('/getfeeditem', methods=['GET'])
+def getfeeditem():
+    FID = request.args.get("FID")
+    print(FID)
+    result = db.collection('feeds').document(FID).get()
+    print(type(result.to_dict()))
+    #test for gitignore
+    return jsonify(result.to_dict()), 200
+
 @app.route('/getcontractors/', methods=['GET'])
 def getcontractors():
     result = db.collection('contractors').get()
@@ -313,19 +329,6 @@ def addcontractor():
         return jsonify(newClient.id),
     except ValueError:
         return jsonify({"MESSAGE": "JSON load error"}), 405
-
-@app.route('/getfeeds', methods=['GET'])
-def getfeeds():
-    result = db.collection('feeds').get()
-    records = getDictFromList(result)
-    return jsonify(records), 200
-
-@app.route('/getfeeditem', methods=['GET'])
-def getfeeditem():
-    FID = request.args.get("FID")
-    print("FID for getfeeditem: ", FID)
-    result = db.collection('feeds').document(FID).get()
-    return jsonify(result.to_dict()), 200
 
 @app.route('/getreviews', methods=['GET'])
 def getreviews():
