@@ -217,21 +217,19 @@ def addlisting():
     new_listing_ref.set(data)
     return new_listing_ref.id, 200
 
-# @app.route('/getclientlistings', methods=['GET'])
-# def getclientlistings():
-#     body = json.loads(request.data)
-#     UID = body["UID"]
-#     result = db.collection('listings').get()
-#     records = getDictFromList(result)
-    
-
-
 @app.route('/getlistings', methods=['GET'])
 def getlistings():
     result = db.collection('listings').get()
-    records = getDictFromList(result)
-    #test for gitignore
-    return jsonify(records), 200
+    listings = getDictFromList(result)
+    for key in listings:
+        print(listings[key]['client'])
+        user_ref = db.collection('users').document(listings[key]['client']).get()
+        user = user_ref.to_dict()
+        if user:
+            listings[key]['location_string'] = user['location_string']
+        else:
+            listings[key]['location_string'] = ''
+    return jsonify(listings), 200
 
 @app.route('/updatelistingimages', methods=['POST'])
 def updatelistingimages():
