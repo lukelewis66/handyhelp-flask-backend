@@ -230,7 +230,7 @@ def getlistings():
             listings[key]['location'] = user['location']
         else:
             listings[key]['location_string'] = ''
-            listings[key]['location'] = user['location']
+            listings[key]['location'] = ''
     return jsonify(listings), 200
 
 @app.route('/updatelistingimages', methods=['POST'])
