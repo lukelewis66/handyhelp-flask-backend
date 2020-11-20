@@ -227,8 +227,10 @@ def getlistings():
         user = user_ref.to_dict()
         if user:
             listings[key]['location_string'] = user['location_string']
+            listings[key]['location'] = user['location']
         else:
             listings[key]['location_string'] = ''
+            listings[key]['location'] = user['location']
     return jsonify(listings), 200
 
 @app.route('/updatelistingimages', methods=['POST'])
