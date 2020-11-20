@@ -13,6 +13,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
 from FirebaseHelpers import getDictFromList
 from dotenv import load_dotenv
+from decimal import Decimal
 load_dotenv(override=True)
 
 # use this if linking to a reaact app on the same server
@@ -147,6 +148,8 @@ def createaccount():
             'bio': "",
             'profilepic': "",
             'skilltags': [],
+            'rating' : 0,
+            'ratingCount' : 0,
         }
         new_contractor_ref.set(contractor_data)
     return "success", 200
@@ -182,6 +185,55 @@ def reactivateaccount():
     user_ref.update({'active': True})
     return "success", 200
 
+
+
+# ----------------------------------------------------------------------------------------------------------------
+#   Review
+# ----------------------------------------------------------------------------------------------------------------
+
+@app.route('/getavgreview/', methods=['POST'])
+def getavgreview():
+    body = json.loads(request.data)
+    conUID = body["UID"]
+    contractor_ref = db.collection(u'contractors').document(conUID).get()
+    contractor = contractor_ref.to_dict()
+    rating = float(contractor["rating"])
+    return rating
+
+@app.route('/addreview/', methods=['POST'])
+def addreview():
+    body = json.loads(request.data)
+    print(body)
+    cont = body["contractor"]
+    cli = body["client"]
+    data = {
+        u'contractor': cont,
+        u'client': cli,
+        u'title': body["title"],
+        u'description': body["description"],
+        u'rating' : body["rating"],
+        u'skilltags': body["skilltags"],
+        u'date_posted': datetime.datetime.now(),
+    }
+    # get the auto generated document id
+    
+    contractor_ref = db.collection(u'contractors').document(cont).get()
+    contractor = contractor_ref.to_dict()
+    rating = float(body["rating"])
+    conrating = float(contractor["rating"])
+    count = float(contractor["ratingCount"])
+    rating = (((conrating) * count) + rating) / (count + 1)
+    count = count + 1
+    print("rating: ")
+    print(rating)
+    print("count: ") 
+    print(count)
+    newcontractor = db.collection(u'contractors').document(cont)
+    newcontractor.update({'rating' : rating})
+    newcontractor.update({'ratingCount' : count})
+    new_review_ref = db.collection(u'reviews').document()
+    new_review_ref.set(data)
+    return new_review_ref.id, 200
 # ----------------------------------------------------------------------------------------------------------------
 #   USER
 # ----------------------------------------------------------------------------------------------------------------
@@ -327,8 +379,8 @@ def addcontractor():
             u'name': body["name"],
             u'email': body["email"],
             u'password': body["password"],
-            u'averageReview': 0,
-            u'reviewCount' : 0,
+            u'rating': body["rating"],
+            u'ratingCount' : body["rating"],
         }
         newClient = db.collection(u'contractors').document()
         newClient.set(data)
