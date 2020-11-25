@@ -191,6 +191,13 @@ def reactivateaccount():
 #   Review
 # ----------------------------------------------------------------------------------------------------------------
 
+@app.route('/getreviews/', methods=['GET'])
+def getreviews():
+    result = db.collection('reviews').get()
+    records = getDictFromList(result)
+    # test for gitignore
+    return jsonify(records), 200
+
 @app.route('/getavgreview/', methods=['POST'])
 def getavgreview():
     body = json.loads(request.data)
@@ -320,6 +327,9 @@ def updatelistingimages():
 # ----------------------------------------------------------------------------------------------------------------
 # CONTRACTOR
 # ----------------------------------------------------------------------------------------------------------------
+
+
+
 @app.route('/addfeeditem/', methods=['POST'])
 def addfeeditem():
     body = json.loads(request.data)
@@ -403,13 +413,6 @@ def addcontractor():
         return jsonify(newClient.id),
     except ValueError:
         return jsonify({"MESSAGE": "JSON load error"}), 405
-
-@app.route('/getreviews', methods=['GET'])
-def getreviews():
-    result = db.collection('reviews').get()
-    records = getDictFromList(result)
-    return jsonify(records), 200
-
 
 @app.route('/isClient', methods=['GET'])
 def isCLient():
