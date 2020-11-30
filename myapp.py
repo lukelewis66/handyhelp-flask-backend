@@ -267,6 +267,31 @@ def editInfo():
     user_ref.update({'name': NAME})
     user_ref.update({'phone': PHONE})
     return "success", 200
+
+
+@app.route('/getuseremail', methods=['GET'])
+def getuseremail():
+    UID = request.args.get("UID")
+    print("UID: ", UID)
+    user_ref = db.collection('users').document(UID).get()
+    user = user_ref.to_dict()
+    print(user)
+    email = user['email']
+    print("Email: ", email)
+    return jsonify(email), 200
+
+
+@app.route('/getusername', methods=['GET'])
+def getusername():
+   UID = request.args.get("UID")
+   print("UID: ", UID)
+   user_ref = db.collection('users').document(UID).get()
+   user = user_ref.to_dict()
+   print(user)
+   name = user['name']
+   print("Name: ", name)
+   return jsonify(name), 200
+
 # ----------------------------------------------------------------------------------------------------------------
 #   LISTING
 # ----------------------------------------------------------------------------------------------------------------
