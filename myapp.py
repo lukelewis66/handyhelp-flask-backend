@@ -271,26 +271,32 @@ def editInfo():
 
 @app.route('/getuseremail', methods=['GET'])
 def getuseremail():
-    UID = request.args.get("UID")
-    print("UID: ", UID)
-    user_ref = db.collection('users').document(UID).get()
-    user = user_ref.to_dict()
-    print(user)
-    email = user['email']
-    print("Email: ", email)
-    return jsonify(email), 200
+    if "UID" in request.args:
+        UID = request.args.get("UID")
+        print("UID: ", UID)
+        user_ref = db.collection('users').document(UID).get()
+        user = user_ref.to_dict()
+        print(user)
+        email = user['email']
+        print("Email: ", email)
+        return jsonify(email), 200
+    else:
+        return "No UID given!", 400
 
 
 @app.route('/getusername', methods=['GET'])
 def getusername():
-   UID = request.args.get("UID")
-   print("UID: ", UID)
-   user_ref = db.collection('users').document(UID).get()
-   user = user_ref.to_dict()
-   print(user)
-   name = user['name']
-   print("Name: ", name)
-   return jsonify(name), 200
+    if "UID" in request.args:
+        UID = request.args.get("UID")
+        print("UID: ", UID)
+        user_ref = db.collection('users').document(UID).get()
+        user = user_ref.to_dict()
+        print(user)
+        name = user['name']
+        print("Name: ", name)
+        return jsonify(name), 200
+    else:
+        return "No UID given!", 400
 
 # ----------------------------------------------------------------------------------------------------------------
 #   LISTING
