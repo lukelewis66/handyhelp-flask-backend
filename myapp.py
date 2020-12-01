@@ -194,6 +194,13 @@ def reactivateaccount():
 #   Review
 # ----------------------------------------------------------------------------------------------------------------
 
+@app.route('/getreviews/', methods=['GET'])
+def getreviews():
+    result = db.collection('reviews').get()
+    records = getDictFromList(result)
+    # test for gitignore
+    return jsonify(records), 200
+
 @app.route('/getavgreview/', methods=['POST'])
 def getavgreview():
     body = json.loads(request.data)
@@ -270,6 +277,37 @@ def editInfo():
     user_ref.update({'name': NAME})
     user_ref.update({'phone': PHONE})
     return "success", 200
+
+
+@app.route('/getuseremail', methods=['GET'])
+def getuseremail():
+    if "UID" in request.args:
+        UID = request.args.get("UID")
+        print("UID: ", UID)
+        user_ref = db.collection('users').document(UID).get()
+        user = user_ref.to_dict()
+        print(user)
+        email = user['email']
+        print("Email: ", email)
+        return jsonify(email), 200
+    else:
+        return "No UID given!", 400
+
+
+@app.route('/getusername', methods=['GET'])
+def getusername():
+    if "UID" in request.args:
+        UID = request.args.get("UID")
+        print("UID: ", UID)
+        user_ref = db.collection('users').document(UID).get()
+        user = user_ref.to_dict()
+        print(user)
+        name = user['name']
+        print("Name: ", name)
+        return jsonify(name), 200
+    else:
+        return "No UID given!", 400
+
 # ----------------------------------------------------------------------------------------------------------------
 #   LISTING
 # ----------------------------------------------------------------------------------------------------------------
@@ -323,6 +361,9 @@ def updatelistingimages():
 # ----------------------------------------------------------------------------------------------------------------
 # CONTRACTOR
 # ----------------------------------------------------------------------------------------------------------------
+
+
+
 @app.route('/addfeeditem/', methods=['POST'])
 def addfeeditem():
     body = json.loads(request.data)
@@ -408,13 +449,6 @@ def addcontractor():
         return jsonify(newClient.id),
     except ValueError:
         return jsonify({"MESSAGE": "JSON load error"}), 405
-
-@app.route('/getreviews', methods=['GET'])
-def getreviews():
-    result = db.collection('reviews').get()
-    records = getDictFromList(result)
-    return jsonify(records), 200
-
 
 @app.route('/isClient', methods=['GET'])
 def isCLient():
