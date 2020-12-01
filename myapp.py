@@ -145,8 +145,11 @@ def createaccount():
     if (body["role"] == "contractor"):
         new_contractor_ref = db.collection('contractors').document(UID)
         contractor_data = {
+            'name' : body["name"],
             'bio': "",
-            'profilepic': "",
+            'location_string' : body["location_string"],
+            'location' : body["location"],
+            'profilepic' : "",
             'skilltags': [],
             'rating' : 0,
             'ratingCount' : 0,
@@ -395,6 +398,8 @@ def addcontractor():
             u'name': body["name"],
             u'email': body["email"],
             u'password': body["password"],
+            u'location_string' : body["location_string"],
+            u'location' : body["location"],
             u'rating': body["rating"],
             u'ratingCount' : body["rating"],
         }
@@ -440,7 +445,6 @@ def getcontractor():
     userDict.update(contractor.to_dict())
     #result = db.collection('contractors').document(UID).get()
     # test for gitignore
-
     return jsonify(userDict), 200
 
 
