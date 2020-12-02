@@ -88,7 +88,7 @@ def upload():
     elif Type == 'Listing':
         key = 'Listings/' + ID + '/' + uploaded_file.filename
     else:
-        key = 'Listings/' + request.form['type'] + '/' + uploaded_file.filename
+        key = 'Feed/' + ID + '/' + uploaded_file.filename
     s3.Bucket(UID.lower()).put_object(
         ACL='public-read-write', Key=f'{key}', Body=uploaded_file)
     return ''
@@ -402,6 +402,19 @@ def getfeeditem():
     print(type(result.to_dict()))
     #test for gitignore
     return jsonify(result.to_dict()), 200
+
+@app.route('/deletefeeditem', methods=['POST', 'GET'])
+def deletefeeditem():
+    UID = request.form['UID'].lower()
+    FID = request.form['FID']
+    db.collection(u'feeds').document(FID).delete()
+    s3_client = boto3.client('s3')
+    prefix = "Feed/"+ FID + "/"
+    response = s3_client.list_objects_v2(Bucket=UID, Prefix=prefix)
+    for object in response['Contents']:
+        print('Deleting', object['Key'])
+        s3_client.delete_object(Bucket=UID, Key=object['Key'])
+    return "success", 400
 
 @app.route('/getcontractors/', methods=['GET'])
 def getcontractors():
