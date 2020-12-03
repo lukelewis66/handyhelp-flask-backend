@@ -414,7 +414,7 @@ def deletefeeditem():
     for object in response['Contents']:
         print('Deleting', object['Key'])
         s3_client.delete_object(Bucket=UID, Key=object['Key'])
-    return "success", 400
+    return "success", 200
 
 @app.route('/getcontractors/', methods=['GET'])
 def getcontractors():
