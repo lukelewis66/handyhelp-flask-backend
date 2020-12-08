@@ -538,7 +538,6 @@ def getrole():
 
     return jsonify(result.to_dict()), 200
 
-
 @app.route('/getcontracts', methods=['GET'])
 def getcontracts():
     result = db.collection('contracts').get()
