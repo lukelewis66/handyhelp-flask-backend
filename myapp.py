@@ -509,19 +509,24 @@ def editContractor():
     user_ref.update({'phone': body["phone"]})
     contractor_ref.update({'skilltags': body["skilltags"]})
     contractor_ref.update({'bio': body["bio"]})
-
-
-@app.route('/updateprofilepicture', methods=['POST'])
-def updateprofilepicture():
-    body = json.loads(request.data)
-    UID = body["UID"]
-    imageUrls = body["imageUrls"]
-    existing_profilepicture_ref = db.collection('contractors').document(UID)
-    existing_profilepicture_ref.set({
+    imageUrls = body["profilepic"]
+    contractor_ref.set({
         "profilepic": imageUrls
     }, merge=True)
-
     return "success", 200
+
+
+# @app.route('/updateprofilepicture', methods=['POST'])
+# def updateprofilepicture():
+#     body = json.loads(request.data)
+#     UID = body["UID"]
+#     imageUrls = body["imageUrls"]
+#     existing_profilepicture_ref = db.collection('contractors').document(UID)
+#     existing_profilepicture_ref.set({
+#         "profilepic": imageUrls
+#     }, merge=True)
+
+#     return "success", 200
 
 # ----------------------------------------------------------------------------------------------------------------
 # CONTRACTS
@@ -531,7 +536,7 @@ def updateprofilepicture():
 @app.route('/getrole', methods=['GET'])
 def getrole():
     UID = request.args.get("UID")
-    print("UID :" + UID)
+    print("UID: " + UID)
     result = db.collection('users').document(UID).get()
     print(result.to_dict())
     # test for gitignore
