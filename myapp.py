@@ -333,7 +333,7 @@ def addlisting():
 
 @app.route('/getlistings', methods=['GET'])
 def getlistings():
-    result = db.collection('listings').get()
+    result = db.collection('listings').order_by('date_posted', direction=firestore.Query.DESCENDING).get()
     listings = getDictFromList(result)
     for key in listings:
         print(listings[key]['client'])
