@@ -62,36 +62,41 @@ s3 = session.resource('s3')
 
 @app.route("/bucketinit", methods=['POST', 'GET'])
 def bucketinit():
-    requestUID = request.form['Bucket']
-    requestACL = request.form['ACL']
-    s3.create_bucket(
-        ACL=f'{requestACL}',
-        Bucket=f'{requestUID.lower()}',
-        CreateBucketConfiguration={
-            'LocationConstraint': 'us-west-1'
-        },
-    )
-    return ''
+    if "UID" in request.form:
+        requestUID = request.form['Bucket']
+        requestACL = request.form['ACL']
+        s3.create_bucket(
+            ACL=f'{requestACL}',
+            Bucket=f'{requestUID.lower()}',
+            CreateBucketConfiguration={
+                'LocationConstraint': 'us-west-1'
+            },
+        )
+        return 'success: bucket initialized', 200
+    else:
+        return 'failure: no UID given', 400
 
 # uploads given image to the bucket named by the UID
 
 
 @app.route("/upload", methods=['POST', 'GET'])
 def upload():
-    uploaded_file = request.files.get('file')
-    UID = request.form['bucket']
-    Type = request.form['type']
-    ID = request.form['IDnum']
-    key = ''
-    if Type == 'ProfilePic':
-        key = 'ProfilePic.png'
-    elif Type == 'Listing':
-        key = 'Listings/' + ID + '/' + uploaded_file.filename
+    if "UID" in request.form:
+        uploaded_file = request.files.get('file')
+        UID = request.form['bucket']
+        Type = request.form['type']
+        ID = request.form['IDnum']
+        key = ''
+        if Type == 'ProfilePic':
+            key = 'ProfilePic.png'
+        elif Type == 'Listing':
+            key = 'Listings/' + ID + '/' + uploaded_file.filename
+        else:
+            key = 'Feed/' + ID + '/' + uploaded_file.filename
+        s3.Bucket(UID.lower()).put_object(ACL='public-read-write', Key=f'{key}', Body=uploaded_file)
+        return 'success: files uploaded to bucket', 200
     else:
-        key = 'Feed/' + ID + '/' + uploaded_file.filename
-    s3.Bucket(UID.lower()).put_object(
-        ACL='public-read-write', Key=f'{key}', Body=uploaded_file)
-    return ''
+        return 'failure: no UID given', 400
 
 
 # cred = credentials.Certificate("handyhelp-f4192-firebase-adminsdk-hgsp6-cbe87ca6a8.json")
@@ -172,8 +177,6 @@ def checkuseractive():
 @app.route('/deactivateaccount', methods=['POST'])
 def deactivateaccount():
     UID = request.form['UID']
-    # body = json.loads(request.data)
-    # UID = body["UID"]
     user_ref = db.collection('users').document(UID)
     user_ref.update({'active': False})
     return "success", 200
@@ -182,8 +185,6 @@ def deactivateaccount():
 @app.route('/reactivateaccount', methods=['POST'])
 def reactivateaccount():
     UID = request.form['UID']
-    # body = json.loads(request.data)
-    # UID = body["UID"]
     user_ref = db.collection('users').document(UID)
     user_ref.update({'active': True})
     return "success", 200
