@@ -86,7 +86,7 @@ def bucketinit():
 def upload():
     if "UID" in request.form:
         uploaded_file = request.files.get('file')
-        UID = request.form['bucket']
+        UID = request.form['UID']
         Type = request.form['type']
         ID = request.form['IDnum']
         key = ''
