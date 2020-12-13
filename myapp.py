@@ -60,11 +60,11 @@ s3 = session.resource('s3')
 # initializes an empty bucket named after the given UID
 
 
-@app.route("/bucketinit", methods=['POST', 'GET'])
+@app.route("/bucketinit", methods=['POST'])
 def bucketinit():
     print("request form: ", request.form)
     if "UID" in request.form:
-        requestUID = request.form['Bucket']
+        requestUID = request.form['UID']
         requestACL = request.form['ACL']
         s3.create_bucket(
             ACL=f'{requestACL}',
