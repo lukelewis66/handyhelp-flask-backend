@@ -62,6 +62,7 @@ s3 = session.resource('s3')
 
 @app.route("/bucketinit", methods=['POST'])
 def bucketinit():
+    print("request form: ", request.form)
     if "UID" in request.form:
         requestUID = request.form['UID']
         requestACL = request.form['ACL']
@@ -72,8 +73,10 @@ def bucketinit():
                 'LocationConstraint': 'us-west-1'
             },
         )
+        print("bucket init success")
         return 'success: bucket initialized', 200
     else:
+        print("bucket init failure")
         return 'failure: no UID given', 400
 
 # uploads given image to the bucket named by the UID
@@ -83,7 +86,7 @@ def bucketinit():
 def upload():
     if "UID" in request.form:
         uploaded_file = request.files.get('file')
-        UID = request.form['bucket']
+        UID = request.form['UID']
         Type = request.form['type']
         ID = request.form['IDnum']
         key = ''
