@@ -511,6 +511,7 @@ def editContractor():
     # db.contractor_ref.update({UID}, {$set: {'name': data.name}})
     user_ref.update({'name': body["name"]})
     user_ref.update({'phone': body["phone"]})
+    contractor_ref.update({'name': body["name"]})
     contractor_ref.update({'skilltags': body["skilltags"]})
     contractor_ref.update({'bio': body["bio"]})
     imageUrls = body["profilepic"]
