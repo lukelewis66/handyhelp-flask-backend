@@ -82,7 +82,8 @@ def upload():
             key = 'Listings/' + ID + '/' + uploaded_file.filename
         else:
             key = 'Feed/' + ID + '/' + uploaded_file.filename
-        s3.Bucket(UID.lower()).put_object(ACL='public-read-write', Key=f'{key}', Body=uploaded_file)
+        test = s3.Bucket(UID.lower()).put_object(ACL='public-read-write', Key=f'{key}', Body=uploaded_file)
+        print("test: ", test)
         return 'success: files uploaded to bucket', 200
     else:
         return 'failure: no UID, type or IDnum given', 400
@@ -340,6 +341,26 @@ def updatelistingimages():
         return "success", 200
     else:
         return "failure: no listingID or imageUrls given", 400
+
+@app.route('/deactivatelisting', methods=['POST', 'GET'])
+def deactivatelisting():
+    if ("LID" in request.form):
+        LID = request.form['LID']
+        existing_listing_ref = db.collection(u'listings').document(LID)
+        existing_listing_ref.update({"active": False})
+        return "success", 200
+    else:
+        return "failure: no LID given", 400
+
+@app.route('/reactivatelisting', methods=['POST', 'GET'])
+def reactivatelisting():
+    if ("LID" in request.form):
+        LID = request.form['LID']
+        existing_listing_ref = db.collection(u'listings').document(LID)
+        existing_listing_ref.update({"active": True})
+        return "success", 200
+    else:
+        return "failure: no LID given", 400
 
 # ----------------------------------------------------------------------------------------------------------------
 # CONTRACTOR
